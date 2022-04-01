@@ -1,7 +1,9 @@
-class responseModel {
-  final int statusCode;
-  final String statusMessage;
-  final String data;
+class ResponseModel {
+  final String user;
 
-  responseModel(this.statusCode, this.statusMessage, this.data);
+  const ResponseModel({required this.user});
+
+  factory ResponseModel.fromJson(Map<String, dynamic> json) {
+    return ResponseModel(user: json['user']);
+  }
 }

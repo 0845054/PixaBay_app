@@ -1,17 +1,20 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:pixabay_app/Constants/PixaBayConstants.dart';
 import 'package:pixabay_app/Models/ResponseModel.dart';
 
-Future<responseModel> getImageService() async {
+Future<dynamic> getImageService() async {
   Response response;
   Dio _dio = Dio();
 
   try {
+    print('trying');
     response = await _dio.get(PixaBayConstants.baseUrl);
-    return new responseModel(
-        response.statusCode ?? -1, response.statusMessage ?? '', response.data);
+
+    return response.data['hits'] ?? '';
   } catch (e) {
     print(e);
   }
-  return new responseModel(-1, 'error', '');
+  return '';
 }
