@@ -6,36 +6,93 @@ import 'package:pixabay_app/Providers/projectProviders.dart';
 import '../Services/ApiServices.dart';
 
 class MainPage extends HookWidget {
-  final ValueNotifier<List<String>> _imagesUrlNotifier =
-      useState<List<String>>([]);
-  final ValueNotifier<bool> _buttonState = useState<bool>(true);
-  final imagesUrlListProvider =
-      useProvider(ProjectProviders.imagesUrlListProvider);
-
-  void _getImages() async {
-    await getImageService().then(
-      (results) {
-        print(results.length);
-        imagesUrlListProvider.addImageUrl(results[0]['largeImageURL']);
-        _imagesUrlNotifier.value = imagesUrlListProvider.state;
-        print(imagesUrlListProvider.state.toString());
+  Widget? _getImages() {
+    FutureBuilder(
+      future: getImageService(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        List<String> imagesUrlList = <String>[];
+        List<Widget> widgetList = [];
+        if (snapshot.hasData) {
+          imagesUrlList = [...imagesUrlList, snapshot.data];
+          widgetList.add(Image.network(imagesUrlList[0]));
+          widgetList.add(Image.network('https://picsum.photos/250?image=9'));
+        } else {
+          widgetList.add(Container());
+        }
+        return Column(
+          children: widgetList,
+        );
       },
     );
-    print('returned');
   }
+
+  // Widget gridView = GridView.builder(
+  //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+  //   itemCount: imagesUrl.length,
+  //   itemBuilder: (BuildContext context, int index) {
+  //     return Image.network(
+  //       imagesUrl[index],
+  //       fit: BoxFit.cover,
+  //     );
+  //   },
+  // );
 
   @override
   Widget build(BuildContext context) {
-    _getImages();
+    final ValueNotifier<List<String>> _imagesUrlNotifier =
+        useState<List<String>>([]);
+    final ValueNotifier<bool> _buttonState = useState<bool>(true);
 
-    // Widget gridView = GridView.builder(
-    //   gridDelegate:
-    //       SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-    //   itemCount: imagesUrl.length,
-    //   itemBuilder: (BuildContext context, int index) {
-    //     return Image.network(
-    //       imagesUrl[index],
-    //       fit: BoxFit.cover,
+    // Widget _loadingPage = FutureBuilder(
+    //   future: getImageService(),
+    //   builder: (BuildContext context, AsyncSnapshot snapshot) {
+    //     List<Widget> widgetList;
+    //     if (snapshot.hasData) {
+    //       List<String> imagesUrlList = <String>[];
+    //       for (var i = 0; i < snapshot.data.length; i++) {
+    //         imagesUrlList = [
+    //           ...imagesUrlList,
+    //           snapshot.data[i]['largeImageURL']
+    //         ];
+    //         print(imagesUrlList.length);
+    //       }
+    //       widgetList = <Widget>[
+    //         // Padding(
+    //         //   padding: const EdgeInsets.only(top: 16),
+    //         //   child: Text('Result: ${snapshot.data}'),
+    //         // )
+    //       ];
+    //       _buttonState.value = !_buttonState.value;
+    //     } else if (snapshot.hasError) {
+    //       widgetList = <Widget>[
+    //         const Icon(
+    //           Icons.error_outline,
+    //           color: Colors.red,
+    //           size: 60,
+    //         ),
+    //         // Padding(
+    //         //   padding: const EdgeInsets.only(top: 16),
+    //         //   child: Text('Error: ${snapshot.error}'),
+    //         // )
+    //       ];
+    //     } else {
+    //       widgetList = const <Widget>[
+    //         SizedBox(
+    //           width: 60,
+    //           height: 60,
+    //           child: CircularProgressIndicator(),
+    //         ),
+    //         Padding(
+    //           padding: EdgeInsets.only(top: 16),
+    //           child: Text('Awaiting result...'),
+    //         )
+    //       ];
+    //     }
+    //     return Center(
+    //       child: Column(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: widgetList,
+    //       ),
     //     );
     //   },
     // );
@@ -48,15 +105,35 @@ class MainPage extends HookWidget {
         title: Text('PixaBay Application'),
       ),
       body: Container(
-        child: Column(
-          children: [
-            Container(
-              child: (imagesUrlListProvider.state.toList().isNotEmpty)
-                  ? Text(imagesUrlListProvider.state.toList().toString())
-                  : Text('Empty'),
-              color: Colors.red,
-            ),
-          ],
+        child: FutureBuilder(
+          future: getImageService(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            List<String> imagesUrlList = [];
+            Widget widgetItem;
+            if (snapshot.hasData) {
+              List<String> testList = [];
+              for (var i = 0; i < 10; i++) {
+                testList = [...testList, snapshot.data[i]['largeImageURL']];
+              }
+              Widget gridImage = GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2),
+                itemCount: testList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Image.network(
+                    testList[index],
+                    fit: BoxFit.cover,
+                  );
+                },
+              );
+              widgetItem = gridImage;
+            } else {
+              widgetItem = Container();
+            }
+            return Container(
+              child: widgetItem,
+            );
+          },
         ),
       ),
       bottomNavigationBar: Container(
